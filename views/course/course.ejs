@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Course - <% course["courseName"] %> </title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script></head>
+<body style="background-color: rgb(230, 230, 230);">
+    <%- include("../navbar.ejs"); %>
+    <% function diffDates(d1,d2){
+        out=d1.getTime()-d2.getTime()
+        temp=""
+        if(out<0){
+            out=(-1)*out
+            temp+="Early"
+        }else{
+            temp+="Late"
+        }
+        days=Math.floor(out/(1000*60*60*24))
+        out=out%(1000*60*60*24)
+        hrs=Math.floor(out/(1000*60*60))
+        out=out%(1000*60*60)
+        mins=Math.floor(out/(1000*60))
+        out=out%(1000*60)
+        secs=Math.floor(out/(1000))
+        t=""
+        if(days!=0){
+            t+=days
+            if(days==1){
+                t+=` day `
+            }else{
+                t+=` days `
+            }
+        }if(hrs!=0){
+            t+=hrs
+            if(hrs==1){
+                t+=` hour `
+            }else{
+                t+=` hours `
+            }
+        }if(mins!=0){
+            t+=mins
+            if(mins==1){
+                t+=` min `
+            }else{
+                t+=` mins `
+            }
+        }if(secs!=0){
+            t+=secs
+            if(secs==1){
+                t+=` sec `
+            }else{
+                t+=` secs `
+            }
+        }
+        return "Submitted "+t+" "+temp
+    } %> 
+    <% if(course) { %>
+        <div id="loading">
+            <div id="loaded"></div>
+        </div>
+        <nav class="container-lg bg-white mt-2 p-3" style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='currentColor'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item">Courses</li>
+                <li class="breadcrumb-item active" aria-current="page"><%-course["courseName"]%></li>
+            </ol>
+        </nav>
+        <div class="container-lg bg-white p-3 my-2">
+            <h3><%- course["courseName"][0].toUpperCase()+course["courseName"].substr(1,) %></h3>
+            <%- course["description"]!=undefined&&course["description"]!=""?(course["description"][0].toUpperCase()+ course["description"].substr(1,)):"This is course "+course["courseName"]%>
+            <hr class="divider my-2">
+        <% if(course["tutor"].length>0) {%>
+            <h3>List of tutors</h3>
+            <% for(i=0;i<course["tutor"].length;i++){ %>
+                <a class="btn btn-outline-primary my-1" href="/users/<%-course["tutor"][i]%>"><%-course["tutor"][i]%></a>
+            <% } %>
+            <% if(course["tutor"].includes(user["userName"])) { %> 
+                <br><a class="btn btn-danger my-1" href="/courses/<%= course["courseId"] %>/tutorLeave">Leave from this course as teacher</a>
+            <% } %>
+            <% if(course["students"].includes(user["userName"])) { %> 
+                <br><a class="btn btn-danger my-1" href="/courses/<%= course["courseId"] %>/studentLeave">Leave from this course as student</a>
+            <% } %>
+        <% }else{ %>
+            <div class="fs-5">No tutor allocated to this course yet</div>
+        <% } %> 
+        </div>
+        <% if((user["userType"]=="teacher" || user["userType"]=="admin" || user["userType"]=="librarian") && !course["tutor"].includes(user["userName"])) { %>
+            <div class="container-lg bg-white  p-3 my-2">
+                <h1>You are not registered in this course as a Tutor</h1>
+                <p>To register in this course as a tutor click <a href="/courses/<%- course["courseId"]%>/tutor">here</a> or on the enroll button</p>
+                <form method="POST" action="/courses/<%- course["courseId"]%>/tutor">
+                    <input type="submit" class="btn btn-primary" value="Enroll as a Teacher">
+                </form>
+            </div>
+        <% } %> 
+        <%if (course["tutor"].includes(user["userName"])) {%>
+            <div class="container-lg bg-white p-3 my-2 ">
+                <nav>
+                    <div class="nav nav-tabs" id="form-tab" role="tablist">
+                        <button class="nav-link active" id="nav-add-content-tab" data-bs-toggle="tab" data-bs-target="#add-content" type="button" role="tab" aria-controls="add-content" aria-selected="true">Add Content</button>
+                        <button class="nav-link" id="add-assignment-tab" data-bs-toggle="tab" data-bs-target="#add-assignment" type="button" role="tab" aria-controls="add-assignment" aria-selected="false">Add Assignment</button>
+                        <button class="nav-link" id="get-grades-tab" data-bs-toggle="tab" data-bs-target="#get-grades" type="button" role="tab" aria-controls="get-grades" aria-selected="false">Get Grades</button>
+                    </div>
+                </nav>
+                <div class="tab-content" style="max-height: 80vh; overflow-y: auto;" id="nav-tabContent">
+                    <div class="tab-pane fade show active p-3" id="add-content" role="tabpanel" aria-labelledby="add-content-tab">
+                        <form method="POST" action="/courses/<%- course['courseId']%>/addContent" onsubmit="return submitForm(this)">
+                            <div class="mb-3">
+                                <label class="form-label" for="contentTitle">Enter Content Title:</label>
+                                <input type="text" name="contentTitle" placeholder="Content Title" class="form-control" id="contentTitle">
+                                <div class="invalid-feedback">Content Title Cannot be empty</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="contentDescription">Enter Content Description:</label>
+                                <textarea name="contentDescription" placeholder="Content Description" class="form-control" id="contentDescription"></textarea>
+                                <div></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="file">Add Content Attachment:</label>
+                                <input type="file" id="file" class="form-control" name="file" multiple>
+                                <div></div>
+                            </div>
+                            <div class="mb-3">
+                                <input class="btn btn-success" type="submit" value="Add content">
+                                <input class="btn btn-danger float-end" type="reset" value="Reset">
+                            </div>
+                        </form>
+                    </div> 
+                    <div class="tab-pane fade p-3" id="add-assignment" role="tabpanel" aria-labelledby="add-assignment-tab">
+                        <form method="POST" action="/courses/<%- course['courseId']%>/addAssignment" onsubmit="return submitForm(this)">
+                            <div class="mb-3">
+                                <label class="form-label" for="assignmentTitle">Enter Assignment Title:</label>
+                                <input class="form-control" placeholder="Assignment Title" type="text" name="assignmentTitle" id="assignmentTitle">
+                                <div></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="assignmentDescription">Enter Assignment Description:</label>
+                                <textarea class="form-control" placeholder="Description" name="assignmentDescription" id="assignmentDescription"></textarea>
+                                <div></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="file">Add Assignment Attachment:</label>
+                                <input type="file" id="file" class="form-control" name="file" multiple>
+                                <div></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="startDate">Set Assignment Start Date:</label>
+                                <input class="form-control" type="datetime-local" name="startDate" id="startDate">
+                                <div></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="endDate">Set Assignment End Date:</label>
+                                <input class="form-control" type="datetime-local" name="endDate" id="endDate">
+                                <div></div>
+                            </div>
+                            <div class="mb-3">
+                                <input class="btn btn-success" type="submit" value="Add Assignment">
+                                <input class="btn btn-danger float-end" type="reset" value="Reset">
+                                <div></div>
+                            </div>
+                        </form>
+                        <div id="results" style="max-height: 40vh; overflow-x:hidden;overflow-y: auto;">
+            
+                        </div>
+                    </div>
+                    <div class="tab-pane fade p-3" id="get-grades" role="tabpanel" aria-labelledby="get-grades-tab">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <%course["assignments"].forEach(assignment => {%>
+                                        <% if(assignment["grades"]!=undefined) { %> 
+                                            <th>
+                                                <a href="/courses/<%- course["courseId"] %>/evaluate/<%- assignment["assignmentTitle"] %>"><%- assignment["assignmentTitle"] %></a> 
+                                            </th>
+                                        <% } %>
+                                    <%});%>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                    <% course["students"].forEach(student => {%>
+                                        <tr>
+                                            <td><%- student %></td>
+                                            <%course["assignments"].forEach(assignment => {%>
+                                                <% if(assignment["grades"]!=undefined) { %> 
+                                                <td><%- assignment["grades"][student]!=undefined?assignment["grades"][student]:"NA" %></td>
+                                                <% } %> 
+                                            <%});%>
+                                        </tr>
+                                    <%}); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>            
+        <% } %>
+        <% if(course.students.includes(user["userName"])||course.tutor.includes(user["userName"])) { %>
+            <div id="contents" class="container-lg bg-white  p-3 my-2">
+                <% if(course["data"].length==0){ %>
+                    <h3>Course Content is empty</h3>
+                <% } else { %>
+                    <h3>Contents</h3>
+                    <% for( let i = 0; i < course["data"].length; i++ ) { %>
+                        <div id="content_<%= course["data"][i]["contentId"] %>" class="card my-3">
+                            <div class="card-header">
+                                <h3><%- course["data"][i]["contentTitle"][0].toUpperCase()+course["data"][i]["contentTitle"].substring(1,) %></h3>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item">
+                                    <p class="card-text"><%- course["data"][i]["contentDescription"]!=undefined&&course["data"][i]["contentDescription"]!=""?course["data"][i]["contentDescription"][0].toUpperCase()+course["data"][i]["contentDescription"].substring(1,):"This is course content "+course["data"][i]["contentTitle"] %></p>
+                                </div>
+                                    <% if(course["data"][i]["files"]!=undefined&&course["data"][i]["files"]!=0) {%>
+                                        <div class="list-group-item">
+                                            <% for( let j = 0; j < course["data"][i]["files"].length; j++ ) { %>
+                                                <% type="";
+                                                if(course["data"][i]["files"][j]["mimetype"].indexOf("text")>=0){
+                                                    type="bi bi-file-earmark-text"
+                                                }else if(course["data"][i]["files"][j]["mimetype"].indexOf("image")>=0){
+                                                    type="bi bi-file-earmark-image"
+                                                }else if(course["data"][i]["files"][j]["mimetype"].indexOf("pdf")>=0){
+                                                    type="bi bi-file-earmark-pdf"
+                                                }else if(course["data"][i]["files"][j]["mimetype"].indexOf("zip")>=0 || course["data"][i]["files"][j]["mimetype"].indexOf("tar")>=0 ){
+                                                    type="bi bi-file-earmark-zip"
+                                                }else if(course["data"][i]["files"][j]["mimetype"].indexOf("audio")>=0){
+                                                    type="bi bi-file-earmark-music"
+                                                }else if(course["data"][i]["files"][j]["mimetype"].indexOf("video")>=0){
+                                                    type="bi bi-file-earmark-play"
+                                                }else{
+                                                    type="bi bi-file-earmark"
+                                                }%>
+                                                <a class="btn btn-outline-primary my-2" href="/courses/<%- course["courseId"]%>/contents/<%- course["data"][i]["contentId"]%>/<%- course["data"][i]["files"][j].filename%>"><i class="fs-5 <%- type%>"></i><%- course["data"][i]["files"][j].originalname %></a>
+                                            <% } %>
+                                            </div>
+                                    <% } %>
+                                    <% if(course.tutor.includes(user["userName"])) {%>
+                                        <div class="list-group-item">
+                                            <form action="/courses/<%- course["courseId"]%>/deleteContent/<%- course["data"][i]["contentId"]%>" method="POST"><button class="btn btn-danger float-end" type="submit"><i class="bi bi-trash"></i></button></form>
+                                        </div>
+                                    <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+            <div id="assignments" class="container-lg bg-white p-3 my-2">
+                <% if(course["assignments"]==undefined||course["assignments"].length==0){ %>
+                    <h3>No assignments assigned yet</h3>
+                <% } else { %>
+                    <h3>Assignments</h3>
+                    <% for( let i = 0; i < course["assignments"].length; i++ ) { %>
+                        <div id="assignment_<%= course["assignments"][i]["assignmentId"] %>" class="card my-3">
+                            <div class="card-header">
+                                <h3><%- course["assignments"][i]["assignmentTitle"][0].toUpperCase()+course["assignments"][i]["assignmentTitle"].substring(1,) %></h3>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item">
+                                    <%- course["assignments"][i]["assignmentDescription"]!=undefined&&course["assignments"][i]["assignmentDescription"]!=""?course["assignments"][i]["assignmentDescription"][0].toUpperCase()+course["assignments"][i]["assignmentDescription"].substring(1,):"This is assignment "+course["assignments"][i]["assignmentTitle"][0].toUpperCase()+course["assignments"][i]["assignmentTitle"].substring(1,) %> 
+                                </div>
+                                <% if(course["assignments"][i]["startDate"]!=undefined&&course["assignments"][i]["startDate"]!=""){ %> 
+                                    <div  class="list-group-item">
+                                        Start Date: <%- course["assignments"][i]["startDate"] %>
+                                    </div>
+                                <% } %> 
+                                <% if(course["assignments"][i]["startDate"]!=undefined&&course["assignments"][i]["endDate"]!=""){ %> 
+                                    <div  class="list-group-item">
+                                        End Date: <%- course["assignments"][i]["endDate"] %>
+                                    </div>
+                                <% } %> 
+                                <% if(course["assignments"][i]["files"]!=undefined&&course["assignments"][i]["files"]!=0) {%>
+                                    <div class="list-group-item">
+                                        <% for( let j = 0; j < course["assignments"][i]["files"].length; j++ ) { %>
+                                            <% type="";
+                                            if(course["assignments"][i]["files"][j]["mimetype"].indexOf("text")>=0){
+                                                type="bi bi-file-earmark-text"
+                                            }else if(course["assignments"][i]["files"][j]["mimetype"].indexOf("image")>=0){
+                                                type="bi bi-file-earmark-image"
+                                            }else if(course["assignments"][i]["files"][j]["mimetype"].indexOf("pdf")>=0){
+                                                type="bi bi-file-earmark-pdf"
+                                            }else if(course["assignments"][i]["files"][j]["mimetype"].indexOf("zip")>=0 || course["assignments"][i]["files"][j]["mimetype"].indexOf("tar")>=0 ){
+                                                type="bi bi-file-earmark-zip"
+                                            }else if(course["assignments"][i]["files"][j]["mimetype"].indexOf("audio")>=0){
+                                                type="bi bi-file-earmark-music"
+                                            }else if(course["assignments"][i]["files"][j]["mimetype"].indexOf("video")>=0){
+                                                type="bi bi-file-earmark-play"
+                                            }else{
+                                                type="bi bi-file-earmark"
+                                            }%>
+                                            <a class="btn btn-outline-primary my-2" href="/courses/<%- course["courseId"]%>/assignments/<%- course["assignments"][i]["assignmentId"]%>/<%- course["assignments"][i]["files"][j].filename%>"><i class="fs-5 <%- type%>"></i><%- course["assignments"][i]["files"][j].originalname %></a>
+                                        <% } %>
+                                        </div>
+                                <% } %>
+                                <div class="list-group-item">
+                                    <nav>
+                                        <div class="nav nav-tabs" id="form-tab" role="tablist">
+                                            <button class="nav-link active" id="nav-make-submission-tab" data-bs-toggle="tab" data-bs-target="#make-submission" type="button" role="tab" aria-controls="make-submission" aria-selected="true">Make Submisssion</button>
+                                        </div>
+                                    </nav>
+                                    <div class="tab-content" id="nav-tabContent">
+                                        <div class="tab-pane fade show active p-3" id="make-submission" role="tabpanel" aria-labelledby="make-submission-tab">
+                                            <form action="/courses/<%- course["courseId"]%>/submitAssignment/<%- course["assignments"][i]["assignmentId"]%>" method="POST" onsubmit="return submitForm(this);">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="file">Add files:</label>
+                                                    <input class="form-control" type="file" name="file" id="file" multiple>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="description">Describe Your Submission:</label>
+                                                    <textarea class="form-control" name="description" id="description"></textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <input class="btn btn-success" type="submit" value="Submit Assignment">
+                                                    <input class="btn btn-danger float-end" type="submit" value="Reset">
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <% if(course["assignments"][i]["gradesVisibility"]){ %> 
+                                    <div class="list-group-item">
+                                        Marks: <%-course["assignments"][i]["grades"]==undefined||course["assignments"][i]["grades"][user["userName"]]==undefined?"NA":course["assignments"][i]["grades"][user["userName"]]%>
+                                    </div>
+                                <% } %>
+                                <% sbmtns=course["assignments"][i]["submissions"].filter((submission)=>{
+                                    if(submission["userId"]==user["userName"]){
+                                        return true
+                                    }
+                                }) %>
+                                <div class="list-group-item">
+                                    <% if(sbmtns!=undefined&&sbmtns.length>0){ %>
+                                        <h3>Your submissions</h3>
+                                        <table class="table table-striped table-bordered border-dark" style="vertical-align: middle">
+                                            <thead><tr><th>Submission Description</th><th>Submission Time</th><th>Files</th><th>#</th></tr></thead>
+                                            <tbody>
+                                                <% for( j=0; j<sbmtns.length; j++) {%>
+                                                    <tr>
+                                                        <td><%= sbmtns[j].description!=undefined&&sbmtns[j].description!=""?sbmtns[j].description:"-" %></td>
+                                                        <% if(course["assignments"][i]["endDate"]!=null) { %> 
+                                                            <td class="<%= sbmtns[j].submissionTime<course["assignments"][i]["endDate"]?"table-success":"table-danger" %>">
+                                                                <%- diffDates(sbmtns[j].submissionTime,course["assignments"][i]["endDate"])%>
+                                                            </td>
+                                                        <% } else {%>
+                                                            <td><%= sbmtns[j].submissionTime %> </td>
+                                                        <% } %>  
+                                                        <td>
+                                                            <% for( let k = 0; k < sbmtns[j]["files"].length; k++ ) { %>
+                                                                <% type="";
+                                                                if(sbmtns[j]["files"][k]["mimetype"].indexOf("text")>=0){
+                                                                    type="bi bi-file-earmark-text"
+                                                                }else if(sbmtns[j]["files"][k]["mimetype"].indexOf("image")>=0){
+                                                                    type="bi bi-file-earmark-image"
+                                                                }else if(sbmtns[j]["files"][k]["mimetype"].indexOf("pdf")>=0){
+                                                                    type="bi bi-file-earmark-pdf"
+                                                                }else if(sbmtns[j]["files"][k]["mimetype"].indexOf("zip")>=0 || sbmtns[j]["files"][k]["mimetype"].indexOf("tar")>=0 ){
+                                                                    type="bi bi-file-earmark-zip"
+                                                                }else if(sbmtns[j]["files"][k]["mimetype"].indexOf("audio")>=0){
+                                                                    type="bi bi-file-earmark-music"
+                                                                }else if(sbmtns[j]["files"][k]["mimetype"].indexOf("video")>=0){
+                                                                    type="bi bi-file-earmark-play"
+                                                                }else{
+                                                                    type="bi bi-file-earmark"
+                                                                }%>
+                                                                <a class="btn btn-outline-primary my-2" href="/courses/<%= course["courseId"]%>/assignments/<%= course["assignments"][i]["assignmentId"] %>/<%= sbmtns[j]["submissionId"] %>/<%= sbmtns[j]["files"][k].filename%>"><i class="fs-5 <%= type%>"></i><%= sbmtns[j]["files"][k].originalname %></a>
+                                                            <% } %>
+                                                        </td>
+
+                                                        <td style="text-align: center;">
+                                                            <form method="POST" action="/courses/<%= course["courseId"]%>/deleteSubmission/<%= course["assignments"][i]["assignmentId"]%>/<%= sbmtns[j].userId %>/<%=sbmtns[j].submissionId %> ">
+                                                                <input class="btn btn-danger" type="submit" value="Delete Submission">
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    <% }else{ %>
+                                        <h3>You haven't made any submissions yet</h3>
+                                    <% } %>  
+                                </div>
+                                <% if(course.tutor.includes(user["userName"])) {%>
+                                    <% if(course["assignments"][i]["submissions"].length==0) {%>
+                                        <div class="list-group-item">
+                                            No Submissions made yet
+                                        </div>
+                                    <% } else { %>
+                                        <div class="list-group-item">
+                                            Some Submissions are made<br>
+                                            <a class="btn btn-outline-primary" href="/courses/<%- course["courseId"]%>/evaluate/<%- course["assignments"][i]["assignmentId"]%>">Evaluate this Assignment</a> 
+                                        </div>
+                                    <% } %>
+                                    <div class="list-group-item">
+                                        <form action="/courses/<%- course["courseId"]%>/showGrades/<%- course["assignments"][i]["assignmentId"]%>" method="POST">
+                                            <button class="btn btn-warning" type="submit" name="submit" value="<%-course["assignments"][i]["gradesVisibility"]?"Hide Grades":"Make Grades Visible"%>">
+                                                <% if(course["assignments"][i]["gradesVisibility"]) { %>
+                                                    <i class="bi bi-lock-fill"></i> Hide Grades
+                                                <% }else{ %>
+                                                    <i class="bi bi-unlock-fill"></i> Make Grades Visible
+                                                <% } %>
+                                            </button>
+                                            <a class="btn btn-danger float-end" href="/courses/<%- course["courseId"]%>/deleteAssignment/<%- course["assignments"][i]["assignmentId"]%>">
+                                                Delete Assignment
+                                            </a>
+                                        </form>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+        <% } %>
+        <%if (!course.students.includes(user["userName"])) { %>
+            <div class="container-lg bg-white  p-3 my-2">
+                <h1>You are not registered in this course as a Student</h1>
+                <p>To register in this course as a student click <a href="/courses/<%- course["courseId"]%>/enroll">here</a> or on the enroll button</p>
+                <form method="POST" action="/courses/<%- course["courseId"]%>/enroll">
+                    <input type="submit" class="btn btn-primary" value="Enroll as a student">
+                </form>
+            </div>
+        <% } %>
+        <div id="toasts" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <% if(error!=undefined&&Array.isArray(error)&&error.length!=0){ %>
+                <div id="toast_danger" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="bi bi-check-circle text-danger me-2"></i>
+                        <strong class="me-auto text-danger">Course Page Alert</strong>
+                        <button type="button" class="btn-close" aria-label="Close" onclick="deleteToast('toast_danger')"></button>
+                    </div>
+                    <div class="toast-body text-danger">
+                        <%- error %><br>
+                    </div>
+                </div>
+                <script>
+                    temp = new bootstrap.Toast(document.getElementById(`toast_danger`),{autohide: false})
+                    temp.show()
+                </script>
+            <% } %>
+            <% if(success!=undefined&&Array.isArray(success)&&success.length!=0){ %>
+                <div id="toast_success" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong class="me-auto text-success">Course Page Alert</strong>
+                        <button type="button" class="btn-close" aria-label="Close" onclick="deleteToast('toast_success')"></button>
+                    </div>
+                    <div class="toast-body text-success">
+                        <%- success %><br>
+                    </div>
+                </div>
+                <script>
+                    temp = new bootstrap.Toast(document.getElementById(`toast_success`),{autohide: false})
+                    temp.show()
+                </script>
+            <% } %>
+        </div>
+        <script>
+            loading=document.getElementById("loading")
+            loaded=document.getElementById("loaded")
+            loading.style.display="none";
+            loading.style.margin="10px";
+            loading.style.border="solid 1px black";
+            loading.style.width="30%";
+            loaded.style.paddingTop="10px";
+            loaded.style.paddingBottom="10px";
+            loaded.style.width="0px";
+            loaded.style.backgroundColor="green";
+            loading.style.textAlign="center"
+            function submitForm(item){
+                try{
+                    loading.style.display="block";
+                    var data = new FormData(item)
+                    var req = new XMLHttpRequest();
+                    req.open("POST",item.action,true);
+                    req.upload.addEventListener("progress", async function(evt) {
+                        if (evt.lengthComputable) {
+                            percentComplete = evt.loaded / evt.total;
+                            percentComplete = percentComplete*100;
+                            loaded.style.width = percentComplete+"%"
+                            loaded.innerHTML= percentComplete+"%"
+                        }
+                        }, false);
+                    req.send(data)
+                    req.onloadend = () => {
+                        loading.style.display="none";
+                        window.location.reload()
+                    }
+                }catch(e){
+                    console.log(e)
+                }
+                return false
+            }
+            function deleteToast(id){
+                temp=new bootstrap.Toast(document.getElementById(id))
+                temp.hide()
+                setTimeout(()=>document.getElementById(id).remove(),1000)
+            }
+        </script>
+    <% } %>
+    <%- include("../footer.ejs") %> 
+</body>
+</html>

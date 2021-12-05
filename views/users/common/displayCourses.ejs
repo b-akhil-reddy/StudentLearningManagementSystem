@@ -1,0 +1,81 @@
+<% if(user["userType"]=="teacher" || user["userType"]=="admin" || user["userType"]=="librarian") { %>
+    <div id="tutorCourses" class="p-3 my-2 container-lg bg-white">
+    <% if(tutorCourses.length>0){ %>
+        <h2>Courses Registered as Tutor</h2>
+        <div class="row">
+        <% for(i=0;i<tutorCourses.length;i++){ %>
+            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                <div class='card h-100' style="max-height: 400px;">
+                    <div class="card-header fs-2">
+                        <%= tutorCourses[i]["courseName"][0].toUpperCase() + tutorCourses[i]["courseName"].substring(1,) %>
+                    </div>
+                    <div class="card-body" style="height: 100%;overflow-y: auto;">
+                        <p class="card-text" style="overflow-y: auto;">
+                            <%=(tutorCourses[i]["description"]!=undefined&&tutorCourses[i]["description"]!="")?tutorCourses[i]["description"][0].toUpperCase() + tutorCourses[i]["description"].substring(1,) :("This course is "+tutorCourses[i]["courseName"])%>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a class="btn btn-danger float-end" href="/courses/delete/<%= tutorCourses[i]["courseId"]%>" ><i class="bi bi-trash"></i></a>
+                        <a class="btn btn-outline-primary" href='/courses/<%= tutorCourses[i]["courseId"]%>'>Go to course page</a>                            
+                    </div>
+                </div>
+            </div>
+        <% } %> 
+        </div>
+    <% }else{ %>
+        <h2>You are not a tutor of any course</h2>
+    <% } %>
+    </div>
+<% } %>
+<div id="studentCourses" class="p-3 my-2 container-lg bg-white">
+    <% if(studentCourses.length>0){ %>
+        <h2>Courses Registered as Student</h2>
+        <div class="row">
+        <% for(i=0;i<studentCourses.length;i++){ %>
+            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                <div class='card h-100' style="max-height: 400px;">
+                    <div class="card-header fs-2">
+                        <%= studentCourses[i]["courseName"][0].toUpperCase() + studentCourses[i]["courseName"].substring(1)%>
+                    </div>
+                    <div class="card-body" style="height: 100%;overflow-y: auto;">
+                        <p class="card-text" style="height:10vh; overflow-y: auto;">
+                            <%=(studentCourses[i]["description"]!=undefined&&studentCourses[i]["description"]!="")?studentCourses[i]["description"]:("This course is "+studentCourses[i]["courseName"])%>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a class="btn btn-outline-primary" href='/courses/<%= studentCourses[i]["courseId"]%>'>Go to course page</a>
+                    </div>
+                </div>
+            </div>
+        <% } %> 
+        </div>
+    <% }else{ %>
+        <h2>You are not a student of any course</h2>
+    <% } %>
+</div>
+<div id="allCourses" class=" p-3 container-lg bg-white my-2" ma>
+    <% if(courses.length>0){ %>
+        <h2>All Courses List</h2>
+        <div class="row">
+        <% for(i=0;i<courses.length;i++){ %>
+            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                <div class='card h-100' style="max-height: 400px;">
+                    <div class="card-header fs-2">
+                        <%= courses[i]["courseName"][0].toUpperCase() + courses[i]["courseName"].substring(1)%>
+                    </div>
+                    <div class="card-body" style="overflow-y: auto;">
+                        <p class="card-text">
+                            <%=(courses[i]["description"]!=undefined&&courses[i]["description"]!="")?courses[i]["description"][0].toUpperCase() + courses[i]["description"].substring(1):("This course is "+courses[i]["courseName"])%>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a class="btn btn-outline-primary" href='/courses/<%= courses[i]["courseId"]%>'>Go to course page</a>
+                    </div>
+                </div>
+            </div>
+        <% } %> 
+        </div>
+    <% }else{ %>
+        <h2>No courses available</h2>
+    <% } %>
+</div>

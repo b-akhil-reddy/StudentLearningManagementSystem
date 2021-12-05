@@ -1,0 +1,26 @@
+<div id="allCourses" class=" p-3 container-lg bg-white my-2" ma>
+    <% if(courses.length>0){ %>
+        <h2>Available Courses List</h2>
+        <div class="row">
+        <% for(i=0;i<courses.length;i++){ %>
+            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                <div class='card h-100' style="max-height: 400px;">
+                    <div class="card-header fs-2">
+                        <%= courses[i]["courseName"][0].toUpperCase()+courses[i]["courseName"].substring(1)%>
+                    </div>
+                    <div class="card-body" style="overflow-y: auto;">
+                        <p class="card-text">
+                            <%=(courses[i]["description"]!=undefined&&courses[i]["description"]!="")?courses[i]["description"][0].toUpperCase()+courses[i]["description"].substring(1):("This course is "+courses[i]["courseName"])%>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a class="btn btn-outline-primary" href='/courses/<%= courses[i]["courseId"]%>'>Go to course page</a>
+                    </div>
+                </div>
+            </div>
+        <% } %> 
+        </div>
+    <% }else{ %>
+        <h2>No courses available</h2>
+    <% } %>
+</div>

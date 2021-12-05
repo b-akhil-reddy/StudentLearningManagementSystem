@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script></head>
+<body style="background-color: rgb(230, 230, 230);">
+    <%- include("navbar.ejs"); %> 
+    <div class="d-flex justify-content-center align-items-center bg-transparent py-5" style="overflow: auto ;height: calc(92vh - 1px)">
+        <form method="POST" class="bg-white shadow-lg" style="margin: auto; max-width: 600px; width: 100%; border-radius: 1em;" action="/authentication/register" onsubmit="return submitForm(this)" onchange="validate(this);document.getElementById('submit').classList.remove('disabled')" onkeyup="validate(this);document.getElementById('submit').classList.remove('disabled')">
+            <div class="fs-1 fw-bolder p-5">Register</div>
+            <hr class="divider m-0">
+            <div class="card-body p-5">
+                <div class="mb-3">
+                    <label class="form-label" for="userName">
+                        Username:
+                    </label>
+                    <div class="input-group">
+                        <label class="input-group-text" for="userName">@</label>
+                        <input class="form-control" id="userName" placeholder="Username" name="userName">
+                        <div></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="password">
+                        Password:
+                    </label>
+                    <div class="input-group">
+                        <label class="input-group-text" for="password"><i class="bi bi-lock"></i></label>
+                        <input class="form-control" id="password" placeholder="Password" name="password" type="password">
+                        <div></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="cpassword">
+                        Confirm Password:
+                    </label>
+                    <div class="input-group">
+                        <label class="input-group-text" for="cpassword"><i class="bi bi-lock"></i></label>
+                        <input class="form-control" id="cpassword" placeholder="Password" name="cpassword" type="password">
+                        <div></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="initial">
+                        Initial:
+                    </label>
+                    <input class="form-control" id="initial" placeholder="Initial" name="initial">
+                    <div></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="firstName">
+                        First Name:
+                    </label>
+                    <input class="form-control" id="firstName" placeholder="First Name" name="firstName">
+                    <div></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="lastName">
+                        Last Name:
+                    </label>
+                    <input class="form-control" id="lastName" placeholder="Last Name" name="lastName">
+                    <div></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="userType">
+                        User Type:
+                    </label>
+                    <select class="form-select" id="userType" name="userType">
+                        <option selected disabled>User Type</option>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                        <option value="librarian">Librarian</option>
+                        <option value="parent">Parent</option>
+                    </select>
+                    <div></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="email">
+                        Email:
+                    </label>
+                    <div class="input-group">
+                        <label class="input-group-text" for="email"><i class="bi bi-envelope"></i></label>
+                        <input class="form-control" placeholder="Email" id="email" name="email">
+                        <div></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="mobile">
+                        Mobile:
+                    </label>
+                    <div class="input-group">
+                        <label class="input-group-text" for="mobile"><i class="bi bi-phone"></i></label>
+                        <input class="form-control" placeholder="Mobile" id="mobile" name="mobile">
+                        <div></div>
+                    </div>
+                </div>
+                <div class="mt-5">
+                    <input class="btn btn-success" type="submit" id="submit" value="Sign-up">
+                    <input class="btn btn-danger float-end" type="reset" value="Reset">
+                    <div></div>
+                </div>
+            </div>
+            <hr class="divider my-0">
+            <div class="text-center p-3">
+                <div>Already have an account? <a href="/login">Sign-in here</a></div>
+                <div>Forgot Password? <a href="/resetPassword">Reset here</a></div>
+            </div>
+            <div id="toasts" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+
+            </div>
+        </form>
+    </div>
+    <%- include("footer.ejs") %> 
+</body>
+<script>
+    password=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~])[A-Za-z\d !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]{8,}$/
+    toastid=0
+    function validate(data){
+        data=Object.fromEntries(new FormData(data))
+        out=true
+        if(data["userName"]==undefined||data["userName"]==""){
+            out=out&&false
+            temp=document.getElementById("userName").nextSibling.nextSibling
+            temp.innerHTML="User Name can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('userName').classList.remove("is-valid")
+            document.getElementById('userName').classList.add("is-invalid")
+        }else{
+            data["userName"]=data["userName"].replace(/[ ]{2,}/g,' ')
+            out=out&&true
+            temp=document.getElementById("userName").nextSibling.nextSibling
+            temp.innerHTML="Looks fine"
+            temp.classList.remove("invalid-feedback")
+            temp.classList.add("valid-feedback")
+            document.getElementById('userName').classList.remove("is-invalid")
+            document.getElementById('userName').classList.add("is-valid")
+        }
+        if(data["password"]==undefined||data["password"]==""){
+            out=out&&false
+            temp=document.getElementById("password").nextSibling.nextSibling
+            temp.innerHTML="Password can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('password').classList.remove("is-valid")
+            document.getElementById('password').classList.add("is-invalid")
+        }else{
+            err=""
+            if(data["password"].length<8){
+                err+="Password must have atleast 8 characters<br>"
+            }
+            if(data["password"].match(/.*[a-z]+.*/)==null){
+                err+="Password must have atleast 1 Lowercase character<br>"
+            }
+            if(data["password"].match(/.*[A-Z]+.*/)==null){
+                err+="Password must have atleast 1 Uppercase character<br>"
+            }
+            if(data["password"].match(/.*[\d]+.*/)==null){
+                err+="Password must have atleast 1 Number<br>"
+            }
+            if(data["password"].match(/.*[ !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]+.*/)==null){
+                err+=`Password must have atleast 1 Special character( !"#$%&'()*+,-./:;<=>?@[\]^_\`{|}~)<br>`
+            }
+            if(err==""){
+                out=out&&true
+                temp=document.getElementById("password").nextSibling.nextSibling
+                temp.innerHTML="Looks fine"
+                temp.classList.remove("invalid-feedback")
+                temp.classList.add("valid-feedback")
+                document.getElementById('password').classList.remove("is-invalid")
+                document.getElementById('password').classList.add("is-valid")
+            }else{
+                out=out&&false
+                temp=document.getElementById("password").nextSibling.nextSibling
+                temp.innerHTML=err
+                temp.classList.add("invalid-feedback")
+                temp.classList.remove("valid-feedback")
+                document.getElementById('password').classList.remove("is-valid")
+                document.getElementById('password').classList.add("is-invalid")
+            }
+        }
+        if(data["cpassword"]==undefined||data["cpassword"]==""){
+            out=out&&false
+            temp=document.getElementById("cpassword").nextSibling.nextSibling
+            temp.innerHTML="Confirm password can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('cpassword').classList.remove("is-valid")
+            document.getElementById('cpassword').classList.add("is-invalid")
+        }else{
+            temp=document.getElementById("cpassword").nextSibling.nextSibling
+            if(document.getElementById("cpassword").value!=document.getElementById("password").value){
+                out=out&&false
+                temp.innerHTML="Passwords did not match"
+                temp.classList.add("invalid-feedback")
+                temp.classList.remove("valid-feedback")
+                document.getElementById('cpassword').classList.remove("is-valid")
+                document.getElementById('cpassword').classList.add("is-invalid")
+            }else{
+                out=out&&true
+                temp.innerHTML="Looks fine"
+                temp.classList.remove("invalid-feedback")
+                temp.classList.add("valid-feedback")
+                document.getElementById('cpassword').classList.remove("is-invalid")
+                document.getElementById('cpassword').classList.add("is-valid")
+            }
+        }
+        if(data["initial"]==undefined||data["initial"]==""){
+            out=out&&false
+            temp=document.getElementById("initial").nextSibling.nextSibling
+            temp.innerHTML="Initial can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('initial').classList.remove("is-valid")
+            document.getElementById('initial').classList.add("is-invalid")
+        }else{
+            data["initial"]=data["initial"].replace(/[ ]{2,}/g,' ')
+            out=out&&true
+            temp=document.getElementById("initial").nextSibling.nextSibling
+            temp.innerHTML="Looks fine"
+            temp.classList.remove("invalid-feedback")
+            temp.classList.add("valid-feedback")
+            document.getElementById('initial').classList.remove("is-invalid")
+            document.getElementById('initial').classList.add("is-valid")
+        }
+        if(data["firstName"]==undefined||data["firstName"]==""){
+            out=out&&false
+            temp=document.getElementById("firstName").nextSibling.nextSibling
+            temp.innerHTML="First Name can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('firstName').classList.remove("is-valid")
+            document.getElementById('firstName').classList.add("is-invalid")
+        }else{
+            data["firstName"]=data["firstName"].replace(/[ ]{2,}/g,' ')
+            out=out&&true
+            temp=document.getElementById("firstName").nextSibling.nextSibling
+            temp.innerHTML="Looks fine"
+            temp.classList.remove("invalid-feedback")
+            temp.classList.add("valid-feedback")
+            document.getElementById('firstName').classList.remove("is-invalid")
+            document.getElementById('firstName').classList.add("is-valid")
+        }
+        if(data["lastName"]==undefined||data["lastName"]==""){
+            out=out&&false
+            temp=document.getElementById("lastName").nextSibling.nextSibling
+            temp.innerHTML="Last Name can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('lastName').classList.remove("is-valid")
+            document.getElementById('lastName').classList.add("is-invalid")
+        }else{
+            data["lastName"]=data["lastName"].replace(/[ ]{2,}/g,' ')
+            out=out&&true
+            temp=document.getElementById("lastName").nextSibling.nextSibling
+            temp.innerHTML="Looks fine"
+            temp.classList.remove("invalid-feedback")
+            temp.classList.add("valid-feedback")
+            document.getElementById('lastName').classList.remove("is-invalid")
+            document.getElementById('lastName').classList.add("is-valid")
+        }
+        if(data["userType"]==undefined||data["userType"]==""){
+            out=out&&false
+            temp=document.getElementById("userType").nextSibling.nextSibling
+            temp.innerHTML="User Type must be selected"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('userType').classList.remove("is-valid")
+            document.getElementById('userType').classList.add("is-invalid")
+        }else{
+            data["userType"]=data["userType"].replace(/[ ]{2,}/g,' ')
+            out=out&&true
+            temp=document.getElementById("userType").nextSibling.nextSibling
+            temp.innerHTML="Looks fine"
+            temp.classList.remove("invalid-feedback")
+            temp.classList.add("valid-feedback")
+            document.getElementById('userType').classList.remove("is-invalid")
+            document.getElementById('userType').classList.add("is-valid")
+        }
+        if(data["email"]==undefined||data["email"]==""){
+            out=out&&false
+            temp=document.getElementById("email").nextSibling.nextSibling
+            temp.innerHTML="Email can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('email').classList.remove("is-valid")
+            document.getElementById('email').classList.add("is-invalid")
+        }else{
+            data["email"]=data["email"].replace(/[ ]{2,}/g,' ')
+            if(data["email"].match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/)==null){
+                out=out&&false
+                temp=document.getElementById("email").nextSibling.nextSibling
+                temp.innerHTML="Invalid Email"
+                temp.classList.add("invalid-feedback")
+                temp.classList.remove("valid-feedback")
+                document.getElementById('email').classList.remove("is-valid")
+                document.getElementById('email').classList.add("is-invalid")
+            }else{
+                out=out&&true
+                temp=document.getElementById("email").nextSibling.nextSibling
+                temp.innerHTML="Looks fine"
+                temp.classList.remove("invalid-feedback")
+                temp.classList.add("valid-feedback")
+                document.getElementById('email').classList.remove("is-invalid")
+                document.getElementById('email').classList.add("is-valid")
+            }
+        }
+        if(data["mobile"]==undefined||data["mobile"]==""){
+            out=out&&false
+            temp=document.getElementById("mobile").nextSibling.nextSibling
+            temp.innerHTML="Mobile Number can't be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            document.getElementById('mobile').classList.remove("is-valid")
+            document.getElementById('mobile').classList.add("is-invalid")
+        }else{
+            data["mobile"]=data["mobile"].replace(/[ ]{2,}/g,' ')
+            if(data["mobile"].match(/^[\d]{10}$/)==null){
+                out=out&&false
+                temp=document.getElementById("mobile").nextSibling.nextSibling
+                temp.innerHTML="Invalid Mobile Number"
+                temp.classList.add("invalid-feedback")
+                temp.classList.remove("valid-feedback")
+                document.getElementById('mobile').classList.remove("is-valid")
+                document.getElementById('mobile').classList.add("is-invalid")
+            }else{
+                out=out&&true
+                temp=document.getElementById("mobile").nextSibling.nextSibling
+                temp.innerHTML="Looks fine"
+                temp.classList.remove("invalid-feedback")
+                temp.classList.add("valid-feedback")
+                document.getElementById('mobile').classList.remove("is-invalid")
+                document.getElementById('mobile').classList.add("is-valid")
+            }
+        }
+        return out
+    }
+    function submitForm(item){
+        try{
+            validation=validate(item)
+            if(!validation){
+                document.getElementById("toasts").innerHTML+=`
+                        <div id="toast_${toastid}" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header">
+                                <i class="bi bi-exclamation-circle text-danger me-2"></i>
+                                <strong class="me-auto text-danger">Registration Error</strong>
+                                <button type="button" class="btn-close" aria-label="Close" onclick="deleteToast('toast_${toastid}')"></button>
+                            </div>
+                            <div class="toast-body text-danger">
+                                Couldn't register because of invalid inputs.
+                            </div>
+                        </div>
+                        `
+                temp=new bootstrap.Toast(document.getElementById(`toast_${toastid}`),{autohide: false})
+                temp.show()
+                document.getElementById("submit").classList.add("disabled")
+                return false
+            }
+            document.getElementById('submit').blur();
+            var data = Object.fromEntries(new FormData(item))
+            var req = new XMLHttpRequest();
+            req.open("POST",item.action,true);
+            req.setRequestHeader("content-type","application/json")
+            req.upload.addEventListener("progress", async function(evt) {
+                if (evt.lengthComputable) {
+                    percentComplete = evt.loaded / evt.total;
+                    percentComplete = percentComplete*100;
+                }
+                }, false);
+            req.send(JSON.stringify(data))
+            req.onloadend = async () => {
+                out=await JSON.parse(req.responseText)
+                if(out["error"]!=undefined){
+                    await document.getElementById("userName").classList.add("is-invalid")
+                    await document.getElementById("password").classList.add("is-invalid")
+                    temp=""
+                    if(Object.prototype.toString.call(out["error"])==='[object Object]'){
+                        for (const key in out["error"]) {
+                            if (Object.hasOwnProperty.call(out["error"], key)) {
+                                temp+=key+"<br>"
+                            }
+                        }
+                    }
+                    document.getElementById("toasts").innerHTML+=`
+                    <div id="toast_${toastid}" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <i class="bi bi-exclamation-circle text-danger me-2"></i>
+                            <strong class="me-auto text-danger">Registration Error</strong>
+                            <button type="button" class="btn-close" aria-label="Close" onclick="deleteToast('toast_${toastid}')"></button>
+                        </div>
+                        <div class="toast-body text-danger">
+                            ${Object.prototype.toString.call(out["error"]) === '[object Object]'?"Couldn't register because of already used details. Following details must be changed:<br>"+temp:"Couldn't register because of invalid inputs."}
+                        </div>
+                    </div>
+                    `
+                    if(Object.prototype.toString.call(out["error"])==='[object Object]'){
+                        for (const key in out["error"]) {
+                            if (Object.hasOwnProperty.call(out["error"], key)) {
+                                const element = out["error"][key];
+                                temp=document.getElementById(key).nextSibling.nextSibling
+                                console.log(element+"<br>")
+                                temp.innerHTML=element+"<br>"
+                                temp.classList.add("invalid-feedback")
+                                temp.classList.remove("valid-feedback")
+                                document.getElementById(key).classList.remove("is-valid")
+                                document.getElementById(key).classList.add("is-invalid")
+                            }
+                        }
+                    }
+                    temp=await new bootstrap.Toast(document.getElementById(`toast_${toastid}`),{autohide: false})
+                    await document.getElementById("submit").classList.add("disabled")
+                    await temp.show()
+                }else if(out["success"]!=undefined){
+                    await document.getElementById("userName").classList.remove("is-invalid")
+                    await document.getElementById("password").classList.remove("is-invalid")
+                    await document.getElementById("userName").classList.add("is-valid")
+                    await document.getElementById("password").classList.add("is-valid")
+                    document.getElementById("toasts").innerHTML+=`
+                    <div id="toast_${toastid}" class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong class="me-auto text-success">Registration Successful</strong>
+                            <button type="button" class="btn-close" aria-label="Close" onclick="deleteToast('toast_${toastid}')"></button>
+                        </div>
+                        <div class="toast-body text-success">
+                            ${out["success"]}<br>
+                            <a href="/login">Click here</a> to go to login page
+                        </div>
+                    </div>
+                    `
+                    temp=await new bootstrap.Toast(document.getElementById(`toast_${toastid}`),{autohide: false})
+                    await temp.show()
+                    await document.getElementById("submit").classList.add("disabled")
+                }
+                toastid+=1
+            }
+        }catch(e){
+            console.log(e)
+        }
+        return false
+    }
+    function deleteToast(id){
+        temp=new bootstrap.Toast(document.getElementById(id))
+        temp.hide()
+        setTimeout(()=>document.getElementById(id).remove(),1000)
+    }
+</script>
+</html>

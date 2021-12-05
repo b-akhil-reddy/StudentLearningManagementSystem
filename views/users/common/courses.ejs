@@ -1,0 +1,129 @@
+<div class="container-lg bg-white p-3 my-2 ">
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <% if(user["userType"]=="teacher" || user["userType"]=="admin" || user["userType"]=="librarian"){ %> 
+                <button class="nav-link active" id="nav-create-course-tab" data-bs-toggle="tab" data-bs-target="#create-course" type="button" role="tab" aria-controls="create-course" aria-selected="true">Create Course</button>
+                <button class="nav-link" id="search-course-tab" data-bs-toggle="tab" data-bs-target="#search-course" type="button" role="tab" aria-controls="search-course" aria-selected="false">Search Course</button>
+            <% } else { %>
+                <button class="nav-link active" id="search-course-tab" data-bs-toggle="tab" data-bs-target="#search-course" type="button" role="tab" aria-controls="search-course" aria-selected="false">Search Course</button>
+            <% } %>  
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <% if(user["userType"]=="teacher" || user["userType"]=="admin" || user["userType"]=="librarian"){ %> 
+        <div class="tab-pane fade show active p-3" id="create-course" role="tabpanel" aria-labelledby="create-course-tab">
+            <form method="POST" action="/courses/create" onsubmit="return validate(this)">
+                    <div class="mb-3">
+                        <label for="courseName" class="form-label">Course Name:</label>
+                        <input type="text" class="form-control" placeholder="Course Name" name="courseName" id="courseName">
+                        <div></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Course Description:</label>
+                        <textarea class="form-control" placeholder="Description" name="description" id="description"></textarea>
+                        <div></div>
+                    </div>
+                    <div>
+                        <input class="btn btn-success" type="submit" value="Create Course">
+                        <input class="btn btn-danger float-end" type="reset" value="Reset">
+                    </div>
+            </form>
+        </div> 
+        <div class="tab-pane fade p-3" id="search-course" role="tabpanel" aria-labelledby="search-course-tab">
+            <form method="POST" action="/courses/search" onkeyup="return submitForm(this)">
+                <div class="mb-3">
+                    <label for="courseName" class="form-label">Course Name:</label>
+                    <input type="text" class="form-control" placeholder="Course Name" name="courseName" id="courseName">
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Course Description:</label>
+                    <textarea class="form-control" placeholder="Description" name="description" id="description"></textarea>
+                </div>
+            </form>
+            <div id="results" style="max-height: 40vh; overflow-x:hidden;overflow-y: auto;">
+
+            </div>
+        </div>
+        <% } else { %>
+            <div class="tab-pane fade show active p-3" id="search-course" role="tabpanel" aria-labelledby="search-course-tab">
+                <form method="POST" action="/courses/search" onkeyup="return submitForm(this)">
+                    <div class="mb-3">
+                        <label for="courseName" class="form-label">Course Name:</label>
+                        <input type="text" class="form-control" name="courseName" id="courseName">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Course Description:</label>
+                        <textarea class="form-control" name="description" id="description"></textarea>
+                    </div>
+                </form>
+                <div id="results" style="max-height: 40vh; overflow-x:hidden;overflow-y: auto;">
+    
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    function validate(item){
+        var d = Object.fromEntries(new FormData(item))
+        if(d["courseName"]==""){
+            temp=document.getElementById("courseName").nextSibling.nextSibling
+            document.getElementById("courseName").classList.add("is-invalid")
+            document.getElementById("courseName").classList.remove("is-valid")
+            temp.innerHTML="Course Name cannot be empty"
+            temp.classList.add("invalid-feedback")
+            temp.classList.remove("valid-feedback")
+            return false
+        }else{
+            temp=document.getElementById("courseName").nextSibling.nextSibling
+            document.getElementById("courseName").classList.remove("is-invalid")
+            document.getElementById("courseName").classList.add("is-valid")
+            temp.innerHTML="Looks fine"
+            temp.classList.add("valid-feedback")
+            temp.classList.remove("invalid-feedback")
+            return true
+        }
+    }
+    function submitForm(item){
+        try{
+            var d = new FormData(item)
+            var req = new XMLHttpRequest();
+            req.open("POST",item.action,true);
+            req.setRequestHeader("Content-type", "application/json");
+            req.send(JSON.stringify(Object.fromEntries(d)))
+            req.onloadend = () => {
+                data=JSON.parse(req.responseText)
+                temp=""
+                if(data.length>0){
+                    temp+="<h2>Search Results</h2>"
+                    temp+=`<div class="row">`
+                    data.forEach((elem)=>{
+                        temp+=`<div class="col-12 col-md-6 col-lg-4 mb-3">
+                            <div class='card h-100' style="max-height: 400px;">
+                                <div class="card-header fs-2">
+                                    ${elem["courseName"]}
+                                </div>
+                                <div class="card-body" style="overflow-y: auto;">
+                                    <p class="card-text">
+                                        ${(elem["description"]!=undefined&&elem["description"]!="")?elem["description"]:("This course is "+elem["courseName"])}
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <a class="btn btn-outline-primary" href='/courses/${elem["courseId"]}'>Go to course page</a>
+                                </div>
+                            </div><br>
+                        </div>`
+                    })
+                    temp+='</div>'
+                }else{
+                    temp+="<h2>No courses matched</h2>"
+                }
+                document.getElementById("results").innerHTML=temp
+            }
+        }catch(e){
+            console.log(e)
+        }
+        return false
+    }
+</script>

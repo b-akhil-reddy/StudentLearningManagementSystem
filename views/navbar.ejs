@@ -1,0 +1,95 @@
+<nav style="background-color: rgb(226, 255, 251);" class="shadow-sm sticky-top">
+    <div class="cotainer container-lg navbar navbar-expand-lg navbar-light">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bolder" href="/">Home</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mb-lg-0  mx-auto">
+                <li class="text-center nav-item">
+                    <a class="nav-link mx-3 <%= location=="/noticeBoard"?"disabled active":"" %> " href="/notice/noticeBoard">Notice Board</a>
+                </li>
+                <li class="text-center nav-item">
+                    <a class="nav-link mx-3 <%= location=="/about"?"disabled active":"" %>" href="/about">About</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <% if (user!=undefined) { %>
+                    <li class="text-center nav-item">
+                        <a class="btn btn-outline-primary m-2 <%=location=='/profile'?"disabled":""%>" href="/profile">Profile</a>
+                    </li>
+                    <li class="text-center nav-item">
+                        <a class="btn btn-outline-danger m-2" href="/logout">Sign-out</a>
+                    </li>
+                <% } else {%>
+                    <%if(location!='/login'&&location!='/register'){%>
+                        <li class="text-center nav-item">
+                            <a class="btn btn-outline-success m-2" href="/login">Sign-in</a>
+                        </li>
+                        <li class="text-center nav-item">
+                            <a class="nav-link m-2 disabled" href="/">or</a>
+                        </li>
+                        <li class="text-center nav-item">
+                                <a class="btn btn-success m-2" href="/register">Sign-up</a>
+                        </li>
+                    <% } else if(location!='/login') { %>
+                        <li class="text-center nav-item">
+                            <a class="btn btn-outline-success m-2" href="/login">Sign-in</a>
+                        </li>
+                            <% } else { %>
+                        <li class="text-center nav-item">
+                            <a class="btn btn-success m-2" href="/register">Sign-up</a>
+                        </li>
+                    <% }%>
+                <% }%>
+            </ul>
+        </div>
+    </div>
+    </div>
+</nav>
+<script>
+function deleteToast(id){
+    temp=new bootstrap.Toast(document.getElementById(id))
+    temp.hide()
+    setTimeout(()=>document.getElementById(id).remove(),1000)
+}
+function diffDates(d1,d2){
+    out=d1.getTime()-d2.getTime()
+    temp=""
+    if(out<0){
+        out=(-1)*out
+        temp+="Late by:<br>"
+    }else{
+        temp+="Early by:<br>"
+    }
+    days=Math.floor(out/(1000*60*60*24))
+    out=out%(1000*60*60*24)
+    hrs=Math.floor(out/(1000*60*60))
+    out=out%(1000*60*60)
+    mins=Math.floor(out/(1000*60))
+    out=out%(1000*60)
+    secs=Math.floor(out/(1000))
+    if(days!=0){
+        temp+=`${days} days `
+    }if(hrs!=0){
+        temp+=`${hrs} hours `
+    }if(mins!=0){
+        temp+=`${mins} mins `
+    }if(secs!=0){
+        temp+=`${secs} secs`
+    }
+    return temp
+}
+</script>
+<style>
+html {
+  scroll-behavior: smooth;
+}
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-thumb {
+    background-color: rgb(133, 133, 133);
+}
+</style>

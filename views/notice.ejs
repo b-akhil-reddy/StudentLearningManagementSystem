@@ -9,7 +9,7 @@
 <body style="background-color: rgb(230, 230, 230);">
     <%- include("navbar.ejs"); %> 
     <script src="/socket.io/socket.io.js"></script>
-    <div class="card container container-fluid bg-white my-2 p-0">
+    <div class="card container-lg bg-white my-2 p-0">
         <div id="notices" class="card-body" style="height:51vh;overflow: auto;">
             <% if(notices!=undefined&&notices.length!=0) {notices.forEach(element => { %>
                 <div class="card mb-3" id="<%- element.noticeId %>" style=<%- element.noticeAuthor==user["userName"]?"\"min-width:25%; max-width: 65%; width: fit-content;margin-left:auto; margin-right: 0px;\"":"\"min-width:25%; max-width: 65%; width: fit-content;\""%>>
@@ -81,7 +81,10 @@
                     <input name="file" type="file" class="form-control" id="file" multiple>
                 </div>
                 <div class="mb-3">
-                    <input class="btn btn-success" type="submit" value="Add notice">
+                    <input class="btn btn-success" type="submit" id="submit" value="Add notice">
+                    <div id="loading" class="progress mt-3" style="display: none;">
+                        <div id="loaded" class="progress-bar fw-bolder bg-success" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -110,6 +113,9 @@
             return true
         }
     }
+    loaded=document.getElementById("loaded")
+    loading=document.getElementById("loading")
+    submit=document.getElementById("submit")
     function submitForm(item,action){
         try{
             if(item.name=="addedNotice"){
@@ -120,15 +126,25 @@
             let data = new FormData(item)
             var req = new XMLHttpRequest();
             req.open("POST",item.action,true);
+            loading.style.display="block"
+            submit.classList.add("disabled")
             req.upload.addEventListener("progress", async function(evt) {
                 if (evt.lengthComputable) {
-                    percentComplete = evt.loaded / evt.total;
-                    percentComplete = percentComplete*100;
+                    percentComplete = (evt.loaded / evt.total)*100;
+                    loaded.style.width = percentComplete+"%"
+                    loaded.innerHTML = parseFloat(percentComplete).toFixed(2)+"%"
+                    if(percentComplete==100){
+                        loaded.innerHTML = "Sent"
+                        submit.classList.remove("disabled")
+                    }
                 }
                 }, false);
             req.send(data)
             req.onloadend = () => {
                 socket.emit(item.name,JSON.parse(req.responseText))
+                loaded.innerHTML=""
+                loading.style.display = "none"
+                loaded.style.width = 0+"%"
                 item.reset()
             }
         }catch(e){
@@ -175,7 +191,7 @@
                             }else{
                                 type="bi bi-file-earmark"
                             }
-                            temp+=`<a class="btn btn-outline-primary my-2" href="/public/files/${ element.files[j].filename}"><i class="fs-5 ${ type}"></i>${ element.files[j].originalname }</a>`
+                            temp+=`<a class="btn btn-outline-primary my-2 me-1" href="/public/files/${ element.files[j].filename}"><i class="fs-5 ${ type}"></i>${ element.files[j].originalname }</a>`
                         }
                         temp+=`</div>`
                     }

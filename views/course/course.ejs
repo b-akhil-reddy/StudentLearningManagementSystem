@@ -57,9 +57,6 @@
         return "Submitted "+t+" "+temp
     } %> 
     <% if(course) { %>
-        <div id="loading">
-            <div id="loaded"></div>
-        </div>
         <nav class="container-lg bg-white mt-2 p-3" style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='currentColor'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -123,8 +120,11 @@
                                 <div></div>
                             </div>
                             <div class="mb-3">
-                                <input class="btn btn-success" type="submit" value="Add content">
+                                <input class="btn btn-success" type="submit" id="submit" value="Add content">
                                 <input class="btn btn-danger float-end" type="reset" value="Reset">
+                                <div id="loading" class="progress mt-3" style="display: none;">
+                                    <div id="loaded" class="progress-bar fw-bolder bg-success" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
                             </div>
                         </form>
                     </div> 
@@ -156,9 +156,11 @@
                                 <div></div>
                             </div>
                             <div class="mb-3">
-                                <input class="btn btn-success" type="submit" value="Add Assignment">
+                                <input class="btn btn-success" type="submit" id="submit" value="Add Assignment">
                                 <input class="btn btn-danger float-end" type="reset" value="Reset">
-                                <div></div>
+                                <div id="loading" class="progress mt-3" style="display: none;">
+                                    <div id="loaded" class="progress-bar fw-bolder bg-success" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
                             </div>
                         </form>
                         <div id="results" style="max-height: 40vh; overflow-x:hidden;overflow-y: auto;">
@@ -306,11 +308,14 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label" for="description">Describe Your Submission:</label>
-                                                    <textarea class="form-control" name="description" id="description"></textarea>
+                                                    <textarea class="form-control" placeholder="Submission Description" name="description" id="description"></textarea>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <input class="btn btn-success" type="submit" value="Submit Assignment">
+                                                    <input class="btn btn-success" type="submit" id="submit" value="Submit Assignment">
                                                     <input class="btn btn-danger float-end" type="submit" value="Reset">
+                                                    <div id="loading" class="progress mt-3" style="display: none;">
+                                                        <div id="loaded" class="progress-bar fw-bolder bg-success" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
                                                 </div>
                                             </form>
                                         </div>
@@ -424,7 +429,7 @@
                 <div id="toast_danger" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header">
                         <i class="bi bi-check-circle text-danger me-2"></i>
-                        <strong class="me-auto text-danger">Course Page Alert</strong>
+                        <strong class="me-auto text-danger">Course Page Error</strong>
                         <button type="button" class="btn-close" aria-label="Close" onclick="deleteToast('toast_danger')"></button>
                     </div>
                     <div class="toast-body text-danger">
@@ -440,7 +445,7 @@
                 <div id="toast_success" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header">
                         <i class="bi bi-check-circle text-success me-2"></i>
-                        <strong class="me-auto text-success">Course Page Alert</strong>
+                        <strong class="me-auto text-success">Course Page Success</strong>
                         <button type="button" class="btn-close" aria-label="Close" onclick="deleteToast('toast_success')"></button>
                     </div>
                     <div class="toast-body text-success">
@@ -454,34 +459,33 @@
             <% } %>
         </div>
         <script>
-            loading=document.getElementById("loading")
-            loaded=document.getElementById("loaded")
-            loading.style.display="none";
-            loading.style.margin="10px";
-            loading.style.border="solid 1px black";
-            loading.style.width="30%";
-            loaded.style.paddingTop="10px";
-            loaded.style.paddingBottom="10px";
-            loaded.style.width="0px";
-            loaded.style.backgroundColor="green";
-            loading.style.textAlign="center"
             function submitForm(item){
                 try{
-                    loading.style.display="block";
-                    var data = new FormData(item)
+                    loading=item.querySelector("#loading")
+                    loaded=item.querySelector("#loaded")
+                    submit=item.querySelector("#submit")
+                    let data = new FormData(item)
                     var req = new XMLHttpRequest();
                     req.open("POST",item.action,true);
+                    loading.style.display="block"
+                    submit.classList.add("disabled")
                     req.upload.addEventListener("progress", async function(evt) {
                         if (evt.lengthComputable) {
-                            percentComplete = evt.loaded / evt.total;
-                            percentComplete = percentComplete*100;
+                            percentComplete = (evt.loaded / evt.total)*100;
                             loaded.style.width = percentComplete+"%"
-                            loaded.innerHTML= percentComplete+"%"
+                            loaded.innerHTML = parseFloat(percentComplete).toFixed(2)+"%"
+                            if(percentComplete==100){
+                                loaded.innerHTML = "Sent"
+                                submit.classList.remove("disabled")
+                            }
                         }
                         }, false);
                     req.send(data)
                     req.onloadend = () => {
-                        loading.style.display="none";
+                        loaded.innerHTML=""
+                        loading.style.display = "none"
+                        loaded.style.width = 0+"%"
+                        item.reset()
                         window.location.reload()
                     }
                 }catch(e){

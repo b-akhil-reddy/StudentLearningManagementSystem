@@ -88,7 +88,7 @@ const submitAssignment = (req,res)=>{
     const files=req.files
     try{
         if(Array.isArray(files)&&files.length>0){
-            courses.updateOne({courseId: courseId,students:{$in:[username]}},{
+            courses.updateOne({courseId: courseId,$or: [{students:{$in:[username]}},{tutor:{$in: [username]}}]},{
                 $push : {
                     "assignments.$[f].submissions": {
                         submissionId: crypto.randomBytes(16).toString("hex"),
@@ -103,7 +103,7 @@ const submitAssignment = (req,res)=>{
                 res.redirect("/courses/"+courseId)
             })
         }else{
-            req.flash("success","Atleast one file must be submitted")
+            req.flash("error","Atleast one file must be submitted")
             res.redirect("/courses/"+courseId)
         }
     }catch(e){
@@ -185,7 +185,7 @@ const deleteSubmission = (req,res)=>{
     const {userName} = req.user
     try {
         if(uname==userName){
-            courses.findOne({courseId: courseId,students:{$in:[uname]}}).then((d)=>{
+            courses.findOne({courseId: courseId,$or: [{students:{$in:[uname]}},{tutor: {$in: [uname]}}]}).then((d)=>{
                 d=d["assignments"].find((t)=>{
                     if(t.assignmentId==assignment){
                         return true
@@ -206,7 +206,7 @@ const deleteSubmission = (req,res)=>{
                     });
                 }
             })
-            courses.updateOne({courseId: courseId,students:{$in:[uname]}},{
+            courses.updateOne({courseId: courseId,$or: [{students:{$in:[uname]}},{tutor: {$in: [uname]}}]},{
                 $pull: {
                     "assignments.$[f].submissions":{
                         userId: uname,
@@ -223,7 +223,7 @@ const deleteSubmission = (req,res)=>{
                 }
             })
         }else{
-            courses.findOne({courseId: courseId,students:{$in:[uname]}, "assignments.assignmentId" : assignment}).then((d)=>{
+            courses.findOne({courseId: courseId,$or: [{students:{$in:[uname]}},{tutor: {$in: [uname]}}], "assignments.assignmentId" : assignment}).then((d)=>{
                 d=d["assignments"].find((t)=>{
                     if(t.assignmentId==assignment){
                         return true
@@ -244,7 +244,7 @@ const deleteSubmission = (req,res)=>{
                     });
                 }
             })
-            courses.updateOne({courseId: courseId,tutor:{$in:[userName]}},{
+            courses.updateOne({courseId: courseId,$or: [{students:{$in:[uname]}},{tutor: {$in: [uname]}}]},{
                 $pull: {
                     "assignments.$[].submissions":{
                         userId: uname,

@@ -19,7 +19,7 @@ router.post("/changePassword",verifyAccessToken,changePassword)
 router.get("/register",verifyAccessToken,register)
 router.post("/register",verifyAccessToken,login)
 router.get("/logout",verifyAccessToken,signoutUser)
-router.get("/about",about)
+router.get("/about",verifyAccessToken,about)
 router.get("/profile",verifyAccessToken,profile)
 
 module.exports = router

@@ -100,16 +100,16 @@ const submitAssignment = (req,res)=>{
                 }
             },{arrayFilters: [{"f.assignmentId" : assignment}]}).then(()=>{
                 req.flash("success","Submitted successfully")
-                res.redirect("/courses/"+courseId)
+                res.send({"success":"Submitted successfully"})
             })
         }else{
             req.flash("error","Atleast one file must be submitted")
-            res.redirect("/courses/"+courseId)
+            res.send({"error":"Atleast one file must be submitted"})
         }
     }catch(e){
         console.log(e)
         req.flash("error","Not submitted successfully")
-        res.redirect("/courses/"+courseId)
+        res.send({"error":"Error at server side please try again after sometime"})
     }
 }
 

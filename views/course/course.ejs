@@ -312,7 +312,7 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <input class="btn btn-success" type="submit" id="submit" value="Submit Assignment">
-                                                    <input class="btn btn-danger float-end" type="submit" value="Reset">
+                                                    <input class="btn btn-danger float-end" type="reset" value="Reset">
                                                     <div id="loading" class="progress mt-3" style="display: none;">
                                                         <div id="loaded" class="progress-bar fw-bolder bg-success" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
                                                     </div>
@@ -492,11 +492,6 @@
                     console.log(e)
                 }
                 return false
-            }
-            function deleteToast(id){
-                temp=new bootstrap.Toast(document.getElementById(id))
-                temp.hide()
-                setTimeout(()=>document.getElementById(id).remove(),1000)
             }
         </script>
     <% } %>
